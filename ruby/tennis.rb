@@ -1,4 +1,16 @@
 class TennisGame
+  DEFAULT_NAMES = {
+    0 => "Love",
+    1 => "Fifteen",
+    2 => "Thirty",
+    3 => "Forty",
+  }
+
+  DEUCE = "Deuce"
+  ALL_SUFIX = "-All"
+  ADVANTAGE = "Advantage"
+  WIN_FOR = "Win for"
+
 
   def initialize(player1Name, player2Name)
     @player1Name = player1Name
@@ -16,41 +28,40 @@ class TennisGame
   end
 
   def score
-    result = ""
-    tempScore=0
-    if (@p1points==@p2points)
-      result = {
-          0 => "Love-All",
-          1 => "Fifteen-All",
-          2 => "Thirty-All",
-      }.fetch(@p1points, "Deuce")
-    elsif (@p1points>=4 or @p2points>=4)
-      minusResult = @p1points-@p2points
-      if (minusResult==1)
-        result ="Advantage " + @player1Name
-      elsif (minusResult ==-1)
-        result ="Advantage " + @player2Name
-      elsif (minusResult>=2)
-        result = "Win for " + @player1Name
-      else
-        result ="Win for " + @player2Name
-      end
-    else
-      (1...3).each do |i|
-        if (i==1)
-          tempScore = @p1points
-        else
-          result+="-"
-          tempScore = @p2points
-        end
-        result += {
-            0 => "Love",
-            1 => "Fifteen",
-            2 => "Thirty",
-            3 => "Forty",
-        }[tempScore]
-      end
+    return equal_points_result(@p1points) if is_equal_points?(@p1points, @p2points)
+
+    if is_potential_winner?(@p1points, @p2points)
+      return potential_winner_result(@p1points, @p2points, @player1Name, @player2Name)
     end
-    result
+
+    normal_result(@p1points, @p2points)
+  end
+
+  def is_equal_points?(p1points, p2points)
+    p1points == p2points
+  end
+
+  def equal_points_result(p1points)
+    return DEUCE if p1points > 2
+
+    DEFAULT_NAMES[p1points] + ALL_SUFIX
+  end
+
+  def is_potential_winner?(p1points, p2points)
+    p1points >= 4 or p2points >= 4
+  end
+
+  def potential_winner_result(p1points, p2points, player1Name, player2Name)
+    minusResult = p1points - p2points
+
+    return ADVANTAGE + " " + player1Name if minusResult == 1
+    return ADVANTAGE + " " + player2Name if minusResult == -1
+    return WIN_FOR + " " + player1Name if minusResult >= 2
+
+    WIN_FOR + " " + player2Name
+  end
+
+  def normal_result(p1points, p2points)
+    DEFAULT_NAMES[p1points] + "-" + DEFAULT_NAMES[p2points]
   end
 end
